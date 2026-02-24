@@ -41,7 +41,7 @@ for col in sensor_cols:
     if use_value:
         # Gebruik nummerinput, kleine stapjes
         step = 0.0001 if col == "Vochtpercentage" else 0.1
-        fmt = "%.5f" if col == "Vochtpercentage" else "%.0f"
+        fmt = "%.5f" if col == "Vochtpercentage" else "%.2f"
         input_values[col] = st.number_input(f"Waarde voor {col}", step=step, format=fmt, key=col+"_value")
         actieve_kolommen.append(col)
 
@@ -65,5 +65,11 @@ if st.button("Voorspel Productnaam"):
             st.warning("Geen vergelijkbare data gevonden.")
         else:
             # Vind rijnummer met kleinste afstand
-            beste_match = df1.loc[df1["afstand"].idxmin()]
-            st.success(f"✅ Voorspelde Productnaam: {beste_match['Productnaam']}")
+    
+            beste_matches = df1.sort_values("afstand").head(5)
+
+            producten = "\n".join(
+                [f"{i}. {naam}" for i, naam in enumerate(beste_matches["Productnaam"], 1)]
+            )
+
+            st.success(f"✅ Voorspelde Productnamen:\n{producten}")
