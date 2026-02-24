@@ -64,9 +64,11 @@ if st.button("Voorspel Productnaam"):
         if len(df1) == 0:
             st.warning("Geen vergelijkbare data gevonden.")
         else:
-            # Vind rijnummer met kleinste afstand
             beste_matches = df1.sort_values("afstand").head(5)
-            st.success("✅ Beste matches:")
 
-            for i, row in enumerate(beste_matches.itertuples(), start=1):
-                st.write(f"{i}. {row.Productnaam} |        Afstand: {row.afstand}")
+            resultaat_tekst = "\n".join(
+                [f"{i}. {row.Productnaam} | Afstand: {row.afstand:.4f}"
+                for i, row in enumerate(beste_matches.itertuples(), 1)]
+            )
+
+            st.success(f"✅ Beste matches:\n\n{resultaat_tekst}")
