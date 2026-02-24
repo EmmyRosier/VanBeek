@@ -15,7 +15,7 @@ if not uploaded_file:
 # Excel inladen (origineel)
 df = pd.read_excel(uploaded_file)
 
-st.subheader("🔍 Data Preview (origineel bestand)")
+st.subheader("Data Preview (origineel bestand)")
 st.dataframe(df)
 st.write("Aantal originele rijen:", len(df))
 
@@ -27,7 +27,7 @@ sensor_cols = [
     "Afschuifhoek"
 ]
 
-st.subheader("🔮 Voer meetwaarden in")
+st.subheader("Voer meetwaarden in")
 
 input_values = {}
 actieve_kolommen = []
