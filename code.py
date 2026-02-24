@@ -6,7 +6,7 @@ st.set_page_config(layout="wide")
 
 st.title("📊 Voorspellingsmodel")
 
-# 👉 Sidebar
+#Sidebar
 st.sidebar.header("📂 Upload je Excel bestand")
 uploaded_file = st.sidebar.file_uploader(
     "Database_testproducten", 
