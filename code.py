@@ -1,35 +1,69 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 
 st.set_page_config(layout="wide")
+st.title("📊 ULTRA WERKEND Voorspellingsmodel – Van Beek")
 
-st.title("📊 Voorspellingsmodel")
+# Sidebar upload
+st.sidebar.header("📂 Upload Excel bestand")
+uploaded_file = st.sidebar.file_uploader("Kies bestand", type=["xlsx"])
 
-#Sidebar
-st.sidebar.header("📂 Upload je Excel bestand")
-uploaded_file = st.sidebar.file_uploader(
-    "Database_testproducten", 
-    type=["xlsx"]
-)
+if not uploaded_file:
+    st.info("⬅️ Upload een Excel bestand via de sidebar om te starten.")
+    st.stop()
 
-if uploaded_file:
+# Excel inladen (origineel)
+df = pd.read_excel(uploaded_file)
 
-    df = pd.read_excel(uploaded_file)
+st.subheader("🔍 Data Preview (origineel bestand)")
+st.dataframe(df)
+st.write("Aantal originele rijen:", len(df))
 
-    st.subheader("Data preview")
-    st.dataframe(df.head())
+# Sensorkolommen
+sensor_cols = [
+    "Stortgewicht",
+    "Vochtpercentage",
+    "Storthoek",
+    "Afschuifhoek"
+]
 
-    # Kies target
-    target = st.selectbox(
-        "Welke kolom wil je voorspellen?", 
-        df.columns
-    )
+st.subheader("🔮 Voer meetwaarden in")
 
-    if target != "Productnaam":
-        st.warning("❌ Dit kun je niet voorspellen met dit model.")
+input_values = {}
+actieve_kolommen = []
+
+for col in sensor_cols:
+    if col not in df.columns:
+        st.warning(f"Kolom '{col}' niet gevonden in Excel.")
+        continue
+
+    use_value = st.checkbox(f"{col} is gegeven", key=col)
+    if use_value:
+        # Gebruik nummerinput, kleine stapjes
+        step = 0.0001 if col == "Vochtpercentage" else 0.1
+        fmt = "%.5f" if col == "Vochtpercentage" else "%.0f"
+        input_values[col] = st.number_input(f"Waarde voor {col}", step=step, format=fmt, key=col+"_value")
+        actieve_kolommen.append(col)
+
+if st.button("Voorspel Productnaam"):
+
+    if len(actieve_kolommen) == 0:
+        st.warning("⚠️ Voer minimaal één meetwaarde in.")
     else:
-        st.success("✅ Productnaam kan worden voorspeld.")
+        df1 = df.copy()
+        df1["afstand"] = 0
 
-else:
-    st.info("⬅️ Upload een Excel-bestand via de sidebar om te starten.")
+        for col in actieve_kolommen:
+            # Converteer kolom naar numeriek, negeer strings
+            df1[col] = pd.to_numeric(df1[col].astype(str).str.replace(",", ".", regex=False), errors="coerce")
+            # Filter rijen zonder getal
+            df1 = df1[df1[col].notna()]
+            # Bereken afstand
+            df1["afstand"] += (df1[col] - input_values[col]) ** 2
+
+        if len(df1) == 0:
+            st.warning("Geen vergelijkbare data gevonden.")
+        else:
+            # Vind rijnummer met kleinste afstand
+            beste_match = df1.loc[df1["afstand"].idxmin()]
+            st.success(f"✅ Voorspelde Productnaam: {beste_match['Productnaam']}")
