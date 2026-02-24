@@ -1,12 +1,24 @@
-import pandas as pd
-df = pd.read_excel('Database_testproducten.xlsx')
-print(df.head())
-
-
 import streamlit as st
+import pandas as pd
+import numpy as np
 
-st.title("Mijn eerste Streamlit app 🚀")
-st.write("Hallo wereld!")
+st.title("📊 Voorspellingsmodel")
 
-if st.button("Klik mij"):
-    st.success("Je hebt geklikt!")
+uploaded_file = st.file_uploader("Database_testproducten", type=["xlsx"])
+
+if uploaded_file:
+
+    df = pd.read_excel(uploaded_file)
+
+    st.subheader("Data preview")
+    st.dataframe(df.head())
+
+    # Kies target
+    target = st.selectbox("Welke kolom wil je voorspellen?", df.columns)
+
+    if target != "Productnaam":
+        st.warning("❌ Dit kun je niet voorspellen met dit model.")
+    else:
+        st.success("✅ Productnaam kan worden voorspeld.")
+
+             
