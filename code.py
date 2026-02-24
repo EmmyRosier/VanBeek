@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 st.set_page_config(layout="wide")
-st.title("📊 ULTRA WERKEND Voorspellingsmodel – Van Beek")
+st.title("📊 Voorspellingsmodel – Van Beek")
 
 # Sidebar upload
 st.sidebar.header("📂 Upload Excel bestand")
