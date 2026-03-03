@@ -31,10 +31,10 @@ if st.session_state.show_preview:
 # Sensorkolommen
 sensor_cols = [
     "Stortgewicht",
-    "Vochtpercentage",
+    "Aggregatietoestand",
     "Storthoek",
     "Afschuifhoek",
-    "Aggregatietoestand"
+    "Vochtpercentage"
 ]
 
 st.subheader("Voer meetwaarden in")
