@@ -26,8 +26,7 @@ sensor_cols = [
     "Vochtpercentage",
     "Storthoek",
     "Afschuifhoek",
-    "Aggregatietoestand",
-    "Kleur"
+    "Aggregatietoestand"
 ]
 
 st.subheader("Voer meetwaarden in")
@@ -70,7 +69,7 @@ if st.button("Voorspel Productnaam"):
             beste_matches = df1.sort_values("afstand").head(5)
 
             resultaat_tekst = "\n".join(
-                [f"{i}. {row.Nr}| {row.Klant} | {row.Productnaam} | Afstand: {row.afstand:.4f}"
+                [f"{i}. {row.Nr}| {row.Product}({row.Productnaam}) | Afstand: {row.afstand:.4f}"
                 for i, row in enumerate(beste_matches.itertuples(), 1)]
             )
             
