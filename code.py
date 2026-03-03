@@ -14,7 +14,7 @@ if not uploaded_file:
 
 # Excel inladen (origineel)
 df = pd.read_excel(uploaded_file)
-df['Nr'] = df["Nr."]
+df.rename(columns={"Nr.": "Nr"}, inplace=True)
 
 st.subheader("Data Preview (origineel bestand)")
 st.dataframe(df)
