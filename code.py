@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import streamlit as st  
+
 
 st.set_page_config(layout="wide")
 st.title("📊 Voorspellingsmodel")
@@ -53,8 +55,9 @@ if st.button("Voorspel Productnaam"):
         st.warning("⚠️ Voer minimaal één meetwaarde in.")
     else:
         df1 = df.copy()
-        df1["afstand"] = 0
-
+        df1["afstand"] = (df[col]-input_values[col])
+        
+        actieve_kolommen = df1.columns
         for col in actieve_kolommen:
             # Converteer kolom naar numeriek, negeer strings
             df1[col] = pd.to_numeric(df1[col].astype(str).str.replace(",", ".", regex=False), errors="coerce")
