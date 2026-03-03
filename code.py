@@ -14,6 +14,7 @@ if not uploaded_file:
 
 # Excel inladen (origineel)
 df = pd.read_excel(uploaded_file)
+df['Nr'] = df["Nr."]
 
 st.subheader("Data Preview (origineel bestand)")
 st.dataframe(df)
@@ -40,8 +41,8 @@ for col in sensor_cols:
     use_value = st.checkbox(f"{col} is gegeven", key=col)
     if use_value:
         # Gebruik nummerinput, kleine stapjes
-        step = 0.0001 if col == "Vochtpercentage" else 0.1
-        fmt = "%.5f" if col == "Vochtpercentage" else "%.2f"
+        step = 0.1
+        fmt = "%.2f"
         input_values[col] = st.number_input(f"Waarde voor {col}", step=step, format=fmt, key=col+"_value")
         actieve_kolommen.append(col)
 
@@ -67,7 +68,7 @@ if st.button("Voorspel Productnaam"):
             beste_matches = df1.sort_values("afstand").head(5)
 
             resultaat_tekst = "\n".join(
-                [f"{i}. {row.Productnaam} | Afstand: {row.afstand:.4f}"
+                [f"{i}. {row.Nr}| {row.Klant} | {row.Productnaam} | Afstand: {row.afstand:.4f}"
                 for i, row in enumerate(beste_matches.itertuples(), 1)]
             )
 
