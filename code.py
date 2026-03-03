@@ -1,12 +1,9 @@
 import streamlit as st
 import pandas as pd
-import streamlit as st  
-
 
 st.set_page_config(layout="wide")
 st.title("📊 Voorspellingsmodel")
 
-<<<<<<< Updated upstream
 # Sidebar upload
 st.sidebar.header("📂 Upload Excel bestand")
 uploaded_file = st.sidebar.file_uploader("Kies bestand", type=["xlsx"])
@@ -14,25 +11,6 @@ uploaded_file = st.sidebar.file_uploader("Kies bestand", type=["xlsx"])
 if not uploaded_file:
     st.info("⬅️ Upload een Excel bestand via de sidebar om te starten.")
     st.stop()
-=======
-#Sidebar
-#Sidebar
-st.sidebar.header("📂 Upload je Excel bestand")
-uploaded_file = st.sidebar.file_uploader(
-    "Database_testproducten", 
-    type=["xlsx"],
-    key='main_upload'
-)
-
-def load_data(uploaded_file: st.runtime.uploaded_file_manager.UploadedFile) -> pd.DataFrame:
-    name = uploaded_file.name.lower()
-    if name.endswith(".xlsx") or name.endswith(".xls"):
-        
-        return pd.read_excel(uploaded_file)
-    if name.endswith(".csv"):
-        return pd.read_csv(uploaded_file)
-    raise ValueError("Upload een .xlsx, .xls of .csv bestand.")
->>>>>>> Stashed changes
 
 # Excel inladen (origineel)
 df = pd.read_excel(uploaded_file)
@@ -74,9 +52,8 @@ if st.button("Voorspel Productnaam"):
         st.warning("⚠️ Voer minimaal één meetwaarde in.")
     else:
         df1 = df.copy()
-        df1["afstand"] = (df[col]-input_values[col])
-        
-        actieve_kolommen = df1.columns
+        df1["afstand"] = 0
+
         for col in actieve_kolommen:
             # Converteer kolom naar numeriek, negeer strings
             df1[col] = pd.to_numeric(df1[col].astype(str).str.replace(",", ".", regex=False), errors="coerce")
@@ -88,7 +65,6 @@ if st.button("Voorspel Productnaam"):
         if len(df1) == 0:
             st.warning("Geen vergelijkbare data gevonden.")
         else:
-<<<<<<< Updated upstream
             beste_matches = df1.sort_values("afstand").head(5)
 
             resultaat_tekst = "\n".join(
@@ -97,10 +73,3 @@ if st.button("Voorspel Productnaam"):
             )
 
             st.success(f"✅ Beste matches:\n\n{resultaat_tekst}")
-=======
-            # Vind rijnummer met kleinste afstand
-            beste_match = df1.loc[df1["afstand"].idxmin()]
-            st.success(f"✅ Voorspelde Productnaam: {beste_match['Productnaam']}")
-            
-            
->>>>>>> Stashed changes
