@@ -44,10 +44,20 @@ for col in sensor_cols:
         # Gebruik nummerinput, kleine stapjes
         step = 0.1
         fmt = "%.2f"
-        input_values[col] = st.number_input(f"Waarde voor {col}", step=step, format=fmt, key=col+"_value")
+        eenheid = []
+        if col == "Stortgewicht":
+            eenheid = "kg/m³"
+        elif col == "Vochtpercentage":
+            eenheid = "%"
+        elif col in ["Storthoek", "Afschuifhoek"]:
+            eenheid = "°"
+        elif col == "Aggregatietoestand":
+            eenheid = ""
+        input_values[col] = st.number_input(f"Waarde voor {col} ({eenheid})", step=step, format=fmt, key=col+"_value")
         actieve_kolommen.append(col)
-
-if st.button("Voorspel Productnaam"):
+        
+        
+if st.button("Voorspel meest vergelijkbare producten"):
 
     if len(actieve_kolommen) == 0:
         st.warning("⚠️ Voer minimaal één meetwaarde in.")
