@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 st.set_page_config(layout="wide")
-st.title("📊 Voorspellingsmodel")
+st.title("Voorspellingsmodel")
 
 # Sidebar upload
 st.sidebar.header("📂 Upload Excel bestand")
@@ -16,9 +16,17 @@ if not uploaded_file:
 df = pd.read_excel(uploaded_file)
 df.rename(columns={"Nr.": "Nr"}, inplace=True)
 
-st.subheader("Data Preview (origineel bestand)")
-st.dataframe(df)
-st.write("Aantal originele rijen:", len(df))
+# Preview knop
+if "show_preview" not in st.session_state:
+    st.session_state.show_preview = False
+
+if st.button("📄 Toon Data Preview"):
+    st.session_state.show_preview = not st.session_state.show_preview
+
+if st.session_state.show_preview:
+    st.subheader("Data Preview (origineel bestand)")
+    st.dataframe(df)
+    st.write("Aantal originele rijen:", len(df))
 
 # Sensorkolommen
 sensor_cols = [
@@ -76,3 +84,27 @@ if st.button("Voorspel Productnaam"):
             st.table(beste_matches[["Nr", "Order", "Product", "Productnaam", "afstand"]])
 
             st.success(f"✅ Beste matches:\n\n{resultaat_tekst}")
+            # Kleine opmerking-box per match (alleen als er iets in staat)
+            if "Opmerking" in beste_matches.columns:
+
+                for i, row in enumerate(beste_matches.itertuples(), 1):
+                    opm = getattr(row, "Opmerking", None)
+
+                    if pd.notna(opm) and str(opm).strip() != "":
+                        st.markdown(
+                            f"""
+                            <div style="
+                                background-color:#faa0a0;
+                                padding:8px;
+                                border-radius:6px;
+                                border-left:4px solid #8b0000;
+                                margin-top:8px;
+                                font-size:14px;
+                            ">
+                            <strong>Opmerking bij match {i}:</strong><br>
+                            {opm}
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+                    
