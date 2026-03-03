@@ -31,10 +31,10 @@ if st.session_state.show_preview:
 # Sensorkolommen
 sensor_cols = [
     "Stortgewicht",
-    "Vochtpercentage",
+    "Aggregatietoestand",
     "Storthoek",
     "Afschuifhoek",
-    "Aggregatietoestand"
+    "Vochtpercentage"
 ]
 
 st.subheader("Voer meetwaarden in")
@@ -52,17 +52,28 @@ for col in sensor_cols:
         # Gebruik nummerinput, kleine stapjes
         step = 0.1
         fmt = "%.2f"
-        input_values[col] = st.number_input(f"Waarde voor {col}", step=step, format=fmt, key=col+"_value")
+        eenheid = []
+        if col == "Stortgewicht":
+            eenheid = "kg/m³"
+        elif col == "Vochtpercentage":
+            eenheid = "%"
+        elif col in ["Storthoek", "Afschuifhoek"]:
+            eenheid = "°"
+        elif col == "Aggregatietoestand":
+            eenheid = ""
+        input_values[col] = st.number_input(f"Waarde voor {col} ({eenheid})", step=step, format=fmt, key=col+"_value")
         actieve_kolommen.append(col)
-
-if st.button("Voorspel Productnaam"):
+        
+        
+if st.button("Voorspel meest vergelijkbare producten"):
 
     if len(actieve_kolommen) == 0:
         st.warning("⚠️ Voer minimaal één meetwaarde in.")
     else:
         df1 = df.copy()
-        df1["afstand"] = 0
-
+        df1["afstand"] = (df[col]-input_values[col])
+        
+        actieve_kolommen = df1.columns
         for col in actieve_kolommen:
             # Converteer kolom naar numeriek, negeer strings
             df1[col] = pd.to_numeric(df1[col].astype(str).str.replace(",", ".", regex=False), errors="coerce")
@@ -77,8 +88,7 @@ if st.button("Voorspel Productnaam"):
             beste_matches = df1.sort_values("afstand").head(5)
 
             resultaat_tekst = "\n".join(
-                [f"{i}. {row.Nr}| {row.Order} | {row.Product}({row.Productnaam}) | Afstand: {row.afstand:.4f}"
-                
+                [f"{i}. {row.Nr}| {row.Order} | {row.Product}({row.Productnaam}) | Afstand: {row.afstand:.4f}| ( opmerkingen: {row.Opmerkingen})"
                 for i, row in enumerate(beste_matches.itertuples(), 1)]
             )
             st.table(beste_matches[["Nr", "Order", "Product", "Productnaam", "afstand"]])
