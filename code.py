@@ -80,7 +80,7 @@ if st.button("Voorspel meest vergelijkbare producten"):
             beste_matches = df1.sort_values("afstand").head(5)
 
             resultaat_tekst = "\n".join(
-                [f"{i}. {row.Nr}| {row.Order} | {row.Product}({row.Productnaam}) | Afstand: {row.afstand:.4f}"
+                [f"{i}. {row.Nr}| {row.Order} | {row.Product}({row.Productnaam}) | Afstand: {row.afstand:.4f}| ( opmerkingen: {row.Opmerkingen})"
                 for i, row in enumerate(beste_matches.itertuples(), 1)]
             )
             st.table(beste_matches[["Nr", "Order", "Product", "Productnaam", "afstand"]])
