@@ -25,7 +25,9 @@ sensor_cols = [
     "Stortgewicht",
     "Vochtpercentage",
     "Storthoek",
-    "Afschuifhoek"
+    "Afschuifhoek",
+    "Aggregatietoestand",
+    "Kleur"
 ]
 
 st.subheader("Voer meetwaarden in")
@@ -71,5 +73,6 @@ if st.button("Voorspel Productnaam"):
                 [f"{i}. {row.Nr}| {row.Klant} | {row.Productnaam} | Afstand: {row.afstand:.4f}"
                 for i, row in enumerate(beste_matches.itertuples(), 1)]
             )
+            
 
             st.success(f"✅ Beste matches:\n\n{resultaat_tekst}")
