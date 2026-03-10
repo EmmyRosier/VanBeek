@@ -101,6 +101,12 @@ if st.button("Voorspel Productnaam"):
                         ]
                     }, 
                     {
+                    'selector': 'td',
+                    'props': [
+                        ('color', 'white')   # tekstkleur in de tabel
+                    ]
+                    },
+                    {
                         'selector': 'td, th',
                         'props': [
                             ('border', '2px solid #4CAF50')
