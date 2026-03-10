@@ -6,16 +6,11 @@ st.title("Voorspellingsmodel")
 
 # Sidebar upload
 st.sidebar.header("📂 Upload Excel bestand")
-import streamlit as st
-import pandas as pd
+uploaded_file = st.sidebar.file_uploader("Kies bestand", type=["xlsx"])
 
-uploaded_file = st.file_uploader("Upload Excel", type=["xlsx", "xls"])
-
-if uploaded_file is not None:
-    uploaded_file.seek(0)
-    df = pd.read_excel(uploaded_file)
-    st.dataframe(df)
-
+if not uploaded_file:
+    st.info("⬅️ Upload een Excel bestand via de sidebar om te starten.")
+    st.stop()
 
 # Excel inladen (origineel)
 df = pd.read_excel(uploaded_file)
