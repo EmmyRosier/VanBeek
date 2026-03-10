@@ -64,25 +64,50 @@ if st.button("Voorspel Productnaam"):
         df1["afstand"] = 0
 
         for col in actieve_kolommen:
-            # Converteer kolom naar numeriek, negeer strings
-            df1[col] = pd.to_numeric(df1[col].astype(str).str.replace(",", ".", regex=False), errors="coerce")
-            # Filter rijen zonder getal
+            df1[col] = pd.to_numeric(
+                df1[col].astype(str).str.replace(",", ".", regex=False),
+                errors="coerce"
+            )
+
             df1 = df1[df1[col].notna()]
-            # Bereken afstand
             df1["afstand"] += (df1[col] - input_values[col]) ** 2
 
         if len(df1) == 0:
             st.warning("Geen vergelijkbare data gevonden.")
         else:
             beste_matches = df1.sort_values("afstand").head(5)
-
-            resultaat_tekst = "\n".join(
-                [f"{i}. {row.Nr}| {row.Order} | {row.Product}({row.Productnaam}) | Afstand: {row.afstand:.4f}"
-                
-                for i, row in enumerate(beste_matches.itertuples(), 1)]
-            )
-            st.success(f"✅ Beste matches:\n\n{resultaat_tekst}")
             
+            def style_dataframe(df):
+                return df.style.set_table_styles(
+                    [{
+                        'selector': 'th',
+                        'props': [
+                            ('background-color', '#4CAF50'),
+                            ('color', 'white'),
+                            ('font-family', 'Arial, sans-serif'),
+                            ('font-size', '16px')
+                        ]
+                    }, 
+                    {
+                        'selector': 'td, th',
+                        'props': [
+                            ('border', '2px solid #4CAF50')
+                        ]
+                    },
+                    {
+                    'selector': 'tbody tr:nth-child(even)',
+                    'props': [('background-color', "#69BA71BA")]
+                    },
+                    {
+                    'selector': 'tbody tr:nth-child(odd)',
+                    'props': [('background-color', "#244B24D0")]
+                    }
+                    ])
+            result_df = beste_matches[["Nr", "Order", "Product", "Productnaam", "afstand"]].reset_index(drop=True)
+            result_df.index = result_df.index + 1
+            styled_df = style_dataframe(result_df)
+            st.header("Top 5 vergelijkbare producten:")
+            st.write(styled_df.to_html(), unsafe_allow_html=True)
             # Opmerkingen als waarschuwingen
             if "Opmerking" in beste_matches.columns:
 
@@ -91,3 +116,4 @@ if st.button("Voorspel Productnaam"):
 
                     if pd.notna(opm) and str(opm).strip() != "":
                         st.info(f"Opmerking bij match {i}: {opm}")
+            
