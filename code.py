@@ -109,10 +109,10 @@ def maak_link(order):
         order_str = str(order).strip()
 
     if order_str.startswith("7"):
-        url = f"pionus://O_{order_str}/"
+        url = f"pionus://Q_{order_str}/"
         return f'<a href="{url}">{order_str}</a>'
     elif order_str.startswith("8"):
-        url = f"pionus://Q_{order_str}/"
+        url = f"pionus://O_{order_str}/"
         return f'<a href="{url}">{order_str}</a>'
     else:
         return order_str
