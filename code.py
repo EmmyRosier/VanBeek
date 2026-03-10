@@ -94,27 +94,12 @@ if st.button("Voorspel Productnaam"):
                 for i, row in enumerate(beste_matches.itertuples(), 1)]
             )
             st.success(f"✅ Beste matches:\n\n{resultaat_tekst}")
-            # Kleine opmerking-box per match (alleen als er iets in staat)
+            
+            # Opmerkingen als waarschuwingen
             if "Opmerking" in beste_matches.columns:
 
                 for i, row in enumerate(beste_matches.itertuples(), 1):
                     opm = getattr(row, "Opmerking", None)
 
                     if pd.notna(opm) and str(opm).strip() != "":
-                        st.markdown(
-                            f"""
-                            <div style="
-                                background-color:#faa0a0;
-                                padding:8px;
-                                border-radius:6px;
-                                border-left:4px solid #8b0000;
-                                margin-top:8px;
-                                font-size:14px;
-                            ">
-                            <strong>Opmerking bij match {i}:</strong><br>
-                            {opm}
-                            </div>
-                            """,
-                            unsafe_allow_html=True
-                        )
-                    
+                        st.info(f"Opmerking bij match {i}: {opm}")
