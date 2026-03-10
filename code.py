@@ -81,8 +81,6 @@ if st.button("Voorspel Productnaam"):
                 
                 for i, row in enumerate(beste_matches.itertuples(), 1)]
             )
-            st.table(beste_matches[["Nr", "Order", "Product", "Productnaam", "afstand"]])
-
             st.success(f"✅ Beste matches:\n\n{resultaat_tekst}")
             # Kleine opmerking-box per match (alleen als er iets in staat)
             if "Opmerking" in beste_matches.columns:
