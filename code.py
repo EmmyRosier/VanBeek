@@ -28,95 +28,178 @@ if st.session_state.show_preview:
     st.dataframe(df)
     st.write("Aantal originele rijen:", len(df))
 
+
 # Sensorkolommen
 sensor_cols = [
     "Stortgewicht",
-    "Aggregatietoestand",
     "Storthoek",
     "Afschuifhoek",
     "Vochtpercentage"
 ]
 
+# Groepen van aggregatietoestanden
+aggregatie_groepen = {
+    "Brokken": ["Brokken", "Flakes", "Granulaat", "Knikker", "Vezels"],
+    "Flakes": ["Brokken", "Flakes", "Granulaat", "Knikker", "Vezels"],
+    "Granulaat": ["Brokken", "Flakes", "Granulaat", "Knikker", "Vezels"],
+    "Knikker": ["Brokken", "Flakes", "Granulaat", "Knikker", "Vezels"],
+    "Vezels": ["Brokken", "Flakes", "Granulaat", "Knikker", "Vezels"],
+    "Poeder": ["Poeder"],
+    "Pasta": ["Pasta"],
+    "Anders": ["Anders"]
+}
+
 st.subheader("Voer meetwaarden in")
 
 input_values = {}
 actieve_kolommen = []
+
+# Aggregatietoestand optioneel maken
+use_agg = st.checkbox("Aggregatietoestand is gegeven")
+
+gekozen_aggregatietoestand = None
+
+if use_agg:
+    gekozen_aggregatietoestand = st.selectbox(
+        "Kies aggregatietoestand",
+        ("Brokken", "Flakes", "Granulaat", "Knikker", "Pasta", "Poeder", "Vezels", "Anders")
+    )
+
+# Sensorinvoer
 for col in sensor_cols:
     if col not in df.columns:
         st.warning(f"Kolom '{col}' niet gevonden in Excel.")
         continue
 
     use_value = st.checkbox(f"{col} is gegeven", key=col)
+
     if use_value:
-        # Gebruik nummerinput, kleine stapjes
         step = 0.1
-        fmt = "%.2f"  
-        
-        eenheid = {}
+        fmt = "%.2f"
+
+        eenheid = ""
         if col == "Stortgewicht":
             eenheid = "kg/m³"
-        elif col == "Aggregatietoestand":
-            eenheid = ""
         elif col == "Storthoek":
             eenheid = "graden"
         elif col == "Afschuifhoek":
             eenheid = "graden"
         elif col == "Vochtpercentage":
             eenheid = "%"
-            
-        input_values[col] = st.number_input(f"Waarde voor {col} ({eenheid})", step=step, format=fmt, key=col+"_value")
+
+        input_values[col] = st.number_input(
+            f"Waarde voor {col} ({eenheid})",
+            step=step,
+            format=fmt,
+            key=col + "_value"
+        )
+
         actieve_kolommen.append(col)
 
 if st.button("Voorspel Productnaam"):
 
-    if len(actieve_kolommen) == 0:
-        st.warning("⚠️ Voer minimaal één meetwaarde in.")
+    if len(actieve_kolommen) == 0 and not use_agg:
+        st.warning("⚠️ Voer minimaal één meetwaarde of aggregatietoestand in.")
     else:
         df1 = df.copy()
-        df1["afstand"] = 0
 
-        for col in actieve_kolommen:
-            df1[col] = pd.to_numeric(
-                df1[col].astype(str).str.replace(",", ".", regex=False),
-                errors="coerce"
+        # Aggregatietoestand verwerken
+        if use_agg:
+            if "Aggregatietoestand" not in df1.columns:
+                st.warning("Kolom 'Aggregatietoestand' niet gevonden in Excel.")
+                st.stop()
+
+            df1["Aggregatietoestand"] = df1["Aggregatietoestand"].astype(str).str.strip()
+
+            toegestane_toestanden = aggregatie_groepen.get(
+                gekozen_aggregatietoestand,
+                [gekozen_aggregatietoestand]
             )
 
-            df1 = df1[df1[col].notna()]
-            df1["afstand"] += (df1[col] - input_values[col]) ** 2
+            # Filter op hele groep
+            df1 = df1[df1["Aggregatietoestand"].isin(toegestane_toestanden)]
 
-        if len(df1) == 0:
-            st.warning("Geen vergelijkbare data gevonden.")
+            if len(df1) == 0:
+                st.warning(f"Geen producten gevonden voor groep van aggregatietoestand: {gekozen_aggregatietoestand}")
+                st.stop()
+
+            # Prioriteit toevoegen:
+            # 0 = exact gekozen toestand
+            # 1 = zelfde groep, maar niet exact
+            df1["agg_prioriteit"] = df1["Aggregatietoestand"].apply(
+                lambda x: 0 if x == gekozen_aggregatietoestand else 1
+            )
         else:
-           # Min-Max normalisatie handmatig
+            df1["agg_prioriteit"] = 0
+
+        # Geen sensorgegevens ingevuld
+        if len(actieve_kolommen) == 0:
+            beste_matches = df1.sort_values(["agg_prioriteit"]).head(5).copy()
+            beste_matches["afstand"] = None
+            beste_matches["aantal_matches"] = 0
+
+        else:
+            # Numerieke kolommen omzetten
+            for col in actieve_kolommen:
+                df1[col] = pd.to_numeric(
+                    df1[col].astype(str).str.replace(",", ".", regex=False),
+                    errors="coerce"
+                )
+
+            # Min-max berekenen
+            min_vals = df1[actieve_kolommen].min()
+            max_vals = df1[actieve_kolommen].max()
+            range_vals = (max_vals - min_vals).replace(0, 1)
+
+            # Data normaliseren
             df_scaled = df1.copy()
-            min_vals = df_scaled[actieve_kolommen].min()
-            max_vals = df_scaled[actieve_kolommen].max()
-            df_scaled[actieve_kolommen] = (df_scaled[actieve_kolommen] - min_vals) / (max_vals - min_vals)
+            df_scaled[actieve_kolommen] = (df_scaled[actieve_kolommen] - min_vals) / range_vals
 
-            # Input omzetten naar dataframe
+            # Input normaliseren
             input_df = pd.DataFrame([input_values])
-
-            # Input ook normaliseren
-            input_scaled = (input_df[actieve_kolommen] - min_vals) / (max_vals - min_vals)
+            input_scaled = (input_df[actieve_kolommen] - min_vals) / range_vals
 
             # Afstand berekenen
-            df_scaled["afstand"] = 0
-            for i, col in enumerate(actieve_kolommen):
-                df_scaled["afstand"] += (df_scaled[col] - input_scaled.iloc[0, i]) ** 2
+            afstanden = []
+            aantal_matches = []
 
-            beste_matches = df_scaled.sort_values("afstand").head()
+            for _, row in df_scaled.iterrows():
+                afstand = 0
+                matches = 0
 
-            resultaat_tekst = "\n".join(
+                for col in actieve_kolommen:
+                    if pd.notna(row[col]):
+                        afstand += (row[col] - input_scaled.iloc[0][col]) ** 2
+                        matches += 1
+
+                if matches > 0:
+                    afstand = afstand / matches
+                else:
+                    afstand = None
+
+                afstanden.append(afstand)
+                aantal_matches.append(matches)
+
+            df_scaled["afstand"] = afstanden
+            df_scaled["aantal_matches"] = aantal_matches
+
+            # Alleen rijen met minstens 1 match
+            df_scaled = df_scaled[df_scaled["afstand"].notna()]
+
+            if len(df_scaled) == 0:
+                st.warning("Geen vergelijkbare data gevonden.")
+                st.stop()
+
+            # Eerst exacte aggregatietoestand, dan afstand, dan aantal matches
+            beste_matches = df_scaled.sort_values(
+                ["agg_prioriteit", "afstand", "aantal_matches"],
+                ascending=[True, True, False]
+            ).head(5)
+
+        def style_dataframe(df):
+            return df.style.set_table_styles(
                 [
-                    f"{i}. {row.Nr}| {row.Order} | {row.Product}({row.Productnaam}) | Afstand: {row.afstand:.4f}"
-                    for i, row in enumerate(beste_matches.itertuples(), 1)
-                ]
-            )
-
-            
-            def style_dataframe(df):
-                return df.style.set_table_styles(
-                    [{
+                    {
                         'selector': 'th',
                         'props': [
                             ('background-color', '#4CAF50'),
@@ -124,12 +207,12 @@ if st.button("Voorspel Productnaam"):
                             ('font-family', 'Arial, sans-serif'),
                             ('font-size', '16px')
                         ]
-                    }, 
+                    },
                     {
-                    'selector': 'td',
-                    'props': [
-                        ('color', 'white')   # tekstkleur in de tabel
-                    ]
+                        'selector': 'td',
+                        'props': [
+                            ('color', 'white')
+                        ]
                     },
                     {
                         'selector': 'td, th',
@@ -138,25 +221,45 @@ if st.button("Voorspel Productnaam"):
                         ]
                     },
                     {
-                    'selector': 'tbody tr:nth-child(even)',
-                    'props': [('background-color', "#69BA71BA")]
+                        'selector': 'tbody tr:nth-child(even)',
+                        'props': [('background-color', "#69BA71BA")]
                     },
                     {
-                    'selector': 'tbody tr:nth-child(odd)',
-                    'props': [('background-color', "#244B24D0")]
+                        'selector': 'tbody tr:nth-child(odd)',
+                        'props': [('background-color', "#244B24D0")]
                     }
-                    ])
-            result_df = beste_matches[["Nr", "Order", "Product", "Productnaam", "afstand"]].reset_index(drop=True)
-            result_df.index = result_df.index + 1
-            styled_df = style_dataframe(result_df)
-            st.header("Top 5 vergelijkbare producten:")
-            st.write(styled_df.to_html(), unsafe_allow_html=True)
-            # Opmerkingen als waarschuwingen
-            if "Opmerking" in beste_matches.columns:
+                ]
+            )
 
-                for i, row in enumerate(beste_matches.itertuples(), 1):
-                    opm = getattr(row, "Opmerking", None)
+        gewenste_kolommen = [
+            "Nr",
+            "Order",
+            "Product",
+            "Productnaam",
+            "Aggregatietoestand",
+            "afstand",
+        ]
+        bestaande_kolommen = [col for col in gewenste_kolommen if col in beste_matches.columns]
 
-                    if pd.notna(opm) and str(opm).strip() != "":
-                        st.info(f"Opmerking bij match {i}: {opm}")
-            
+        result_df = beste_matches[bestaande_kolommen].reset_index(drop=True)
+        result_df.index = result_df.index + 1
+
+        styled_df = style_dataframe(result_df)
+
+        if use_agg:
+            groep_tekst = ", ".join(aggregatie_groepen[gekozen_aggregatietoestand])
+            st.header(
+                f"Top 5 vergelijkbare producten voor {gekozen_aggregatietoestand} "
+                f"(groep: {groep_tekst})"
+            )
+        else:
+            st.header("Top 5 vergelijkbare producten (alle aggregatietoestanden)")
+
+        st.write(styled_df.to_html(), unsafe_allow_html=True)
+
+        # Opmerkingen tonen
+        if "Opmerking" in beste_matches.columns:
+            for i, row in enumerate(beste_matches.itertuples(), 1):
+                opm = getattr(row, "Opmerking", None)
+                if pd.notna(opm) and str(opm).strip() != "":
+                    st.info(f"Opmerking bij match {i}: {opm}")
