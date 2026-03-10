@@ -100,7 +100,7 @@ if st.button("Voorspel Productnaam"):
             for i, col in enumerate(actieve_kolommen):
                 df_scaled["afstand"] += (df_scaled[col] - input_scaled.iloc[0, i]) ** 2
 
-            beste_matches = df_scaled.sort_values("afstand").head(71)
+            beste_matches = df_scaled.sort_values("afstand").head()
 
             resultaat_tekst = "\n".join(
                 [
