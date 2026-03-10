@@ -41,7 +41,6 @@ st.subheader("Voer meetwaarden in")
 
 input_values = {}
 actieve_kolommen = []
-
 for col in sensor_cols:
     if col not in df.columns:
         st.warning(f"Kolom '{col}' niet gevonden in Excel.")
@@ -51,8 +50,21 @@ for col in sensor_cols:
     if use_value:
         # Gebruik nummerinput, kleine stapjes
         step = 0.1
-        fmt = "%.2f"
-        input_values[col] = st.number_input(f"Waarde voor {col}", step=step, format=fmt, key=col+"_value")
+        fmt = "%.2f"  
+        
+        eenheid = {}
+        if col == "Stortgewicht":
+            eenheid = "kg/m³"
+        elif col == "Aggregatietoestand":
+            eenheid = ""
+        elif col == "Storthoek":
+            eenheid = "graden"
+        elif col == "Afschuifhoek":
+            eenheid = "graden"
+        elif col == "Vochtpercentage":
+            eenheid = "%"
+            
+        input_values[col] = st.number_input(f"Waarde voor {col} ({eenheid})", step=step, format=fmt, key=col+"_value")
         actieve_kolommen.append(col)
 
 if st.button("Voorspel Productnaam"):
