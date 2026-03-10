@@ -29,7 +29,8 @@ if st.session_state.show_preview:
     st.write("Aantal originele rijen:", len(df))
 
 
-# Sensorkolommen
+# Sensorkolommen ZONDER aggregatietoestand, deze worden apart behandeld teehee
+
 sensor_cols = [
     "Stortgewicht",
     "Storthoek",
@@ -95,6 +96,27 @@ for col in sensor_cols:
         )
 
         actieve_kolommen.append(col)
+
+
+def maak_link(order):
+    if pd.isna(order):
+        return ""
+
+    # eerst netjes naar integer-string omzetten
+    try:
+        order_str = str(int(float(order)))
+    except:
+        order_str = str(order).strip()
+
+    if order_str.startswith("7"):
+        url = f"pionus://O_{order_str}/"
+        return f'<a href="{url}">{order_str}</a>'
+    elif order_str.startswith("8"):
+        url = f"pionus://Q_{order_str}/"
+        return f'<a href="{url}">{order_str}</a>'
+    else:
+        return order_str
+
 
 if st.button("Voorspel Productnaam"):
 
@@ -196,6 +218,23 @@ if st.button("Voorspel Productnaam"):
                 ascending=[True, True, False]
             ).head(5)
 
+        gewenste_kolommen = [
+            "Nr",
+            "Order",
+            "Product",
+            "Productnaam",
+            "Aggregatietoestand",
+            "afstand",
+        ]
+        bestaande_kolommen = [col for col in gewenste_kolommen if col in beste_matches.columns]
+
+        result_df = beste_matches[bestaande_kolommen].reset_index(drop=True)
+        result_df.index = result_df.index + 1
+
+        # Maak Order klikbaar
+        if "Order" in result_df.columns:
+            result_df["Order"] = result_df["Order"].apply(maak_link)
+
         def style_dataframe(df):
             return df.style.set_table_styles(
                 [
@@ -231,19 +270,6 @@ if st.button("Voorspel Productnaam"):
                 ]
             )
 
-        gewenste_kolommen = [
-            "Nr",
-            "Order",
-            "Product",
-            "Productnaam",
-            "Aggregatietoestand",
-            "afstand",
-        ]
-        bestaande_kolommen = [col for col in gewenste_kolommen if col in beste_matches.columns]
-
-        result_df = beste_matches[bestaande_kolommen].reset_index(drop=True)
-        result_df.index = result_df.index + 1
-
         styled_df = style_dataframe(result_df)
 
         if use_agg:
@@ -255,7 +281,7 @@ if st.button("Voorspel Productnaam"):
         else:
             st.header("Top 5 vergelijkbare producten (alle aggregatietoestanden)")
 
-        st.write(styled_df.to_html(), unsafe_allow_html=True)
+        st.write(styled_df.to_html(escape=False), unsafe_allow_html=True)
 
         # Opmerkingen tonen
         if "Opmerking" in beste_matches.columns:
