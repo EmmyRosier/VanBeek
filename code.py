@@ -87,7 +87,32 @@ if st.button("Voorspel Productnaam"):
         if len(df1) == 0:
             st.warning("Geen vergelijkbare data gevonden.")
         else:
-            beste_matches = df1.sort_values("afstand").head(5)
+           # Min-Max normalisatie handmatig
+            df_scaled = df1.copy()
+            min_vals = df_scaled[actieve_kolommen].min()
+            max_vals = df_scaled[actieve_kolommen].max()
+            df_scaled[actieve_kolommen] = (df_scaled[actieve_kolommen] - min_vals) / (max_vals - min_vals)
+
+            # Input omzetten naar dataframe
+            input_df = pd.DataFrame([input_values])
+
+            # Input ook normaliseren
+            input_scaled = (input_df[actieve_kolommen] - min_vals) / (max_vals - min_vals)
+
+            # Afstand berekenen
+            df_scaled["afstand"] = 0
+            for i, col in enumerate(actieve_kolommen):
+                df_scaled["afstand"] += (df_scaled[col] - input_scaled.iloc[0, i]) ** 2
+
+            beste_matches = df_scaled.sort_values("afstand").head()
+
+            resultaat_tekst = "\n".join(
+                [
+                    f"{i}. {row.Nr}| {row.Order} | {row.Product}({row.Productnaam}) | Afstand: {row.afstand:.4f}"
+                    for i, row in enumerate(beste_matches.itertuples(), 1)
+                ]
+            )
+
             
             def style_dataframe(df):
                 return df.style.set_table_styles(
