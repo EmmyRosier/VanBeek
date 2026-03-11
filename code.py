@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 
 st.set_page_config(layout="wide")
+st.image("vanBeekLogo.pdf", width=150)
 st.title("Voorspellingsmodel")
 
 # Sidebar upload
@@ -250,7 +251,7 @@ if st.button("Voorspel Productnaam"):
                     {
                         'selector': 'td',
                         'props': [
-                            ('color', 'white')
+                            ('color', 'black')
                         ]
                     },
                     {
@@ -265,7 +266,7 @@ if st.button("Voorspel Productnaam"):
                     },
                     {
                         'selector': 'tbody tr:nth-child(odd)',
-                        'props': [('background-color', "#244B24D0")]
+                        'props': [('background-color', "#B9E5B9D0")]
                     }
                 ]
             )
