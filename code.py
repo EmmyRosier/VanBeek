@@ -122,7 +122,7 @@ def maak_link(order):
         return order_str
 
 
-if st.button("Voorspel Productnaam"):
+if st.button("Dichtstbijzijnd Productnaam"):
 
     if len(actieve_kolommen) == 0 and not use_agg:
         st.warning("⚠️ Voer minimaal één meetwaarde of aggregatietoestand in.")
