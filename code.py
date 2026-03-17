@@ -1,6 +1,3 @@
-import dis
-from turtle import distance
-
 import streamlit as st
 import pandas as pd
 import numpy as np
