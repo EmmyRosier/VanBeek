@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 st.set_page_config(layout="wide")
-st.image("vanBeekLogoPNG.png", width=200)
+st.image("VanBeekLogoPNG.png", width=200)
 st.title("Voorspellingsmodel")
 
 # Sidebar upload
