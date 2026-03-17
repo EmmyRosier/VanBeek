@@ -16,7 +16,10 @@ if not uploaded_file:
 # Excel inladen (origineel)
 df = pd.read_excel(uploaded_file)
 df.rename(columns={"Nr.": "Nr"}, inplace=True)
-
+# Kolom "Nr" als nummer zonder decimalen forceren
+if "Nr" in df.columns:
+    df["Nr"] = df["Nr"].apply(lambda x: str(int(x)) if pd.notna(x) else x)
+    
 # Preview knop
 if "show_preview" not in st.session_state:
     st.session_state.show_preview = False
