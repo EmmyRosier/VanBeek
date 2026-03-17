@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 st.set_page_config(layout="wide")
-st.image("vanBeekLogo.pdf", width=200)
+st.image("vanBeekLogoPNG.png", width=300)
 st.title("Voorspellingsmodel")
 
 # Sidebar upload
