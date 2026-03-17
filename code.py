@@ -1,5 +1,9 @@
+import dis
+from turtle import distance
+
 import streamlit as st
 import pandas as pd
+import numpy as np
 
 st.set_page_config(layout="wide")
 st.image("vanBeekLogo.pdf", width=200)
@@ -182,40 +186,43 @@ if st.button("Dichtstbijzijnd Productnaam"):
             input_df = pd.DataFrame([input_values])
             input_scaled = (input_df[actieve_kolommen] - min_vals) / range_vals
 
-            # Afstand berekenen
-            afstanden = []
+            # Score berekenen
+            Scores = []
             aantal_matches = []
 
             for _, row in df_scaled.iterrows():
-                afstand = 0
+                Scorecore = 0
                 matches = 0
 
                 for col in actieve_kolommen:
                     if pd.notna(row[col]):
-                        afstand += (row[col] - input_scaled.iloc[0][col]) ** 2
+                        row_val = row[col] if row[col] is not None else 0
+                        input_val = input_scaled.iloc[0][col] if input_scaled.iloc[0][col] is not None else 0
+
+                        Score = (row_val - input_val) ** 2        
                         matches += 1
 
                 if matches > 0:
-                    afstand = afstand / matches
+                    Score = Score / matches
                 else:
-                    afstand = None
+                    Score = None
 
-                afstanden.append(afstand)
+                Scores.append(Score)
                 aantal_matches.append(matches)
 
-            df_scaled["afstand"] = afstanden
+            df_scaled["Score"] = Scores
             df_scaled["aantal_matches"] = aantal_matches
 
             # Alleen rijen met minstens 1 match
-            df_scaled = df_scaled[df_scaled["afstand"].notna()]
+            df_scaled = df_scaled[df_scaled["Score"].notna()]
 
             if len(df_scaled) == 0:
                 st.warning("Geen vergelijkbare data gevonden.")
                 st.stop()
 
-            # Eerst exacte aggregatietoestand, dan afstand, dan aantal matches
+            # Eerst exacte aggregatietoestand, dan Score, dan aantal matches
             beste_matches = df_scaled.sort_values(
-                ["agg_prioriteit", "afstand", "aantal_matches"],
+                ["agg_prioriteit", "Score", "aantal_matches"],
                 ascending=[True, True, False]
             ).head(5)
 
@@ -225,7 +232,7 @@ if st.button("Dichtstbijzijnd Productnaam"):
             "Product",
             "Productnaam",
             "Aggregatietoestand",
-            "afstand",
+            "Score",
         ]
         bestaande_kolommen = [col for col in gewenste_kolommen if col in beste_matches.columns]
 
@@ -280,7 +287,7 @@ if st.button("Dichtstbijzijnd Productnaam"):
                 f"(groep: {groep_tekst})"
             )
             with st.expander("ⓘ Uitleg ranking"):
-                st.write("Het product is vergeleken met producten in dezelfde groep van aggregatietoestanden. Het meest vergelijkbare product heeft de laagste afstand (afhankelijk van de ingevoerde meetwaarden) en de hoogste prioriteit (exacte aggregatietoestand). Andere producten in dezelfde aggregatietoestand groep worden geprioriteerd boven producten met een andere aggregatietoestand, dus producten met een lagere afstand uit een andere aggregatietoestand kunnen lager scoren dan producten met een hogere afstand maar dezelfde aggregatietoestand.")
+                st.write("Het product is vergeleken met producten in dezelfde groep van aggregatietoestanden. Het meest vergelijkbare product heeft de laagste score (afhankelijk van de ingevoerde meetwaarden) en de hoogste prioriteit (exacte aggregatietoestand). Andere producten in dezelfde aggregatietoestand groep worden geprioriteerd boven producten met een andere aggregatietoestand, dus producten met een lagere score uit een andere aggregatietoestand kunnen lager scoren dan producten met een hogere score maar dezelfde aggregatietoestand.")
         else:
             st.header("Top 5 vergelijkbare producten (alle aggregatietoestanden)")
 
