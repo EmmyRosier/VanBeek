@@ -1,6 +1,3 @@
-import dis
-from turtle import distance
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -208,16 +205,13 @@ if st.button("Toon resultaten"):
                 if matches > 0:
                     Score = Score / matches
                 else:
-                    Score = None
+                    Score = "Zelfde aggregatietoestand, geen meetwaarden ingevuld"
 
                 Scores.append(Score)
                 aantal_matches.append(matches)
 
             df_scaled["Score"] = Scores
             df_scaled["aantal_matches"] = aantal_matches
-
-            # Alleen rijen met minstens 1 match
-            df_scaled = df_scaled[df_scaled["Score"].notna()]
 
             if len(df_scaled) == 0:
                 st.warning("Geen vergelijkbare data gevonden.")
