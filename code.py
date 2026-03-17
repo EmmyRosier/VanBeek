@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 
 st.set_page_config(layout="wide")
-st.image("vanBeekLogoPNG.png", width=300)
+st.image("vanBeekLogoPNG.png", width=200)
 st.title("Voorspellingsmodel")
 
 # Sidebar upload
@@ -297,8 +297,18 @@ if st.button("Dichtstbijzijnd Productnaam"):
         st.write(styled_df.to_html(escape=False), unsafe_allow_html=True)
 
         # Opmerkingen tonen
+        # Als er alleen cijfers staan in de kolom, wordt de maaklink functie toegepast zodat het ook een link is binnen opmerkingen en niet alleen resultaten.
+        
         if "Opmerking" in beste_matches.columns:
             for i, row in enumerate(beste_matches.itertuples(), 1):
                 opm = getattr(row, "Opmerking", None)
+
                 if pd.notna(opm) and str(opm).strip() != "":
-                    st.info(f"Opmerking bij match {i}: {opm}")
+                    opm_str = str(opm).strip()
+
+                    # Alleen als de opmerking uitsluitend uit cijfers bestaat:
+                    if opm_str.isdigit():
+                        opm_html = maak_link(opm_str)
+                        st.markdown(f"**Opmerking bij match {i}:** {opm_html}", unsafe_allow_html=True)
+                    else:
+                        st.info(f"Opmerking bij match {i}: {opm_str}")
