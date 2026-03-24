@@ -215,7 +215,7 @@ with tab_voorspellen:
                     if matches > 0:
                         Score = Score / matches
                     else:
-                        Score = "Zelfde aggregatietoestand, geen meetwaarden ingevuld"
+                        Score = "Zelfde aggregatietoestand, geen gemeten waarden"
 
                     Scores.append(Score)
                     aantal_matches.append(matches)
@@ -239,7 +239,8 @@ with tab_voorspellen:
                 "Product",
                 "Productnaam",
                 "Aggregatietoestand",
-                "Score",
+                "Kleur",
+                "Score"
             ]
             bestaande_kolommen = [col for col in gewenste_kolommen if col in beste_matches.columns]
 
