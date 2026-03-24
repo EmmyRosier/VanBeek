@@ -4,7 +4,7 @@ import numpy as np
 
 st.set_page_config(layout="wide")
 st.image("vanBeekLogoPNG.png", width=150)
-st.title("Overeenkomende producten")
+st.header("Overeenkomende producten")
 
 # Sidebar upload
 st.sidebar.header("📂 Upload Excel bestand")
