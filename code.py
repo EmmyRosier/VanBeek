@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 st.set_page_config(layout="wide")
-st.image("vanBeekLogoPNG.png", width=150)
+st.image("VanBeekLogoPNG.png", width=150)
 st.header("Overeenkomende producten")
 
 # Sidebar upload
