@@ -301,9 +301,11 @@ with tab_voorspellen:
 
             st.write(styled_df.to_html(escape=False), unsafe_allow_html=True)
 
+              
             # Opmerkingen tonen
             if "Opmerking" in beste_matches.columns:
+                beste_matches["Opmerking"] = beste_matches["Opmerking"].apply(maak_link)
                 for i, row in enumerate(beste_matches.itertuples(), 1):
                     opm = getattr(row, "Opmerking", None)
                     if pd.notna(opm) and str(opm).strip() != "":
-                        st.info(f"Opmerking bij match {i}: {opm}")
+                        st.markdown(f"**Opmerking bij product {i}:** {opm}", unsafe_allow_html=True)  
